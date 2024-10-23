@@ -2,11 +2,9 @@
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -44,8 +42,6 @@ h1 {
 
 .logo {
   height: 6em;
-  padding: 1.5em;
-  will-change: filter;
 }
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
@@ -79,6 +75,13 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+#myCanvas {
+  width: 256px;
+  height: 256px;
+  border: 1px solid black;
+  border-radius: 8px;
 }
 
 @media (prefers-color-scheme: light) {
