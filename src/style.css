@@ -78,10 +78,13 @@ button:focus-visible {
 }
 
 #myCanvas {
-  width: 256px;
-  height: 256px;
   border: 1px solid black;
   border-radius: 8px;
+  box-shadow: 2px 2px 12px rgba(0, 0, 0, 0.5);
+}
+
+button.selectedTool {
+  background-color: #d3d3d3;
 }
 
 @media (prefers-color-scheme: light) {

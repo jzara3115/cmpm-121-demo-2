@@ -9,6 +9,8 @@ app.innerHTML = `
     <button id="clearButton">Clear</button>
     <button id="undoButton">Undo</button>
     <button id="redoButton">Redo</button>
+    <button id="thinButton">Thin</button>
+    <button id="thickButton">Thick</button>
 `;
 
 const canvas = document.createElement('canvas') as HTMLCanvasElement;
@@ -23,9 +25,11 @@ context.strokeStyle = 'black';
 
 class MarkerLine {
     private points: { x: number, y: number }[] = [];
+    private thickness: number;
 
-    constructor(x: number, y: number) {
+    constructor(x: number, y: number, thickness: number) {
         this.points.push({ x, y });
+        this.thickness = thickness;
     }
 
     drag(x: number, y: number) {
@@ -33,6 +37,7 @@ class MarkerLine {
     }
 
     display(ctx: CanvasRenderingContext2D) {
+        ctx.lineWidth = this.thickness;
         ctx.beginPath();
         for (let i = 0; i < this.points.length; i++) {
             const point = this.points[i];
@@ -50,10 +55,11 @@ let drawing = false;
 let drawings: MarkerLine[] = [];
 let redoStack: MarkerLine[] = [];
 let currentDrawing: MarkerLine | null = null;
+let currentThickness = 2;
 
 canvas.addEventListener('mousedown', (event) => {
     drawing = true;
-    currentDrawing = new MarkerLine(event.offsetX, event.offsetY);
+    currentDrawing = new MarkerLine(event.offsetX, event.offsetY, currentThickness);
     drawings.push(currentDrawing);
     redoStack = []; // Clear redo stack on new drawing
     canvas.dispatchEvent(new Event('drawing-changed'));
@@ -106,5 +112,20 @@ redoButton.addEventListener('click', () => {
         drawings.push(lastUndone);
         canvas.dispatchEvent(new Event('drawing-changed'));
     }
+});
+
+const thinButton = document.getElementById('thinButton') as HTMLButtonElement;
+const thickButton = document.getElementById('thickButton') as HTMLButtonElement;
+
+thinButton.addEventListener('click', () => {
+    currentThickness = 2;
+    thinButton.classList.add('selectedTool');
+    thickButton.classList.remove('selectedTool');
+});
+
+thickButton.addEventListener('click', () => {
+    currentThickness = 5;
+    thickButton.classList.add('selectedTool');
+    thinButton.classList.remove('selectedTool');
 });
 
