@@ -51,17 +51,42 @@ class MarkerLine {
     }
 }
 
+class ToolPreview {
+    private x: number;
+    private y: number;
+    private thickness: number;
+
+    constructor(x: number, y: number, thickness: number) {
+        this.x = x;
+        this.y = y;
+        this.thickness = thickness;
+    }
+
+    updatePosition(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+    }
+
+    draw(ctx: CanvasRenderingContext2D) {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.thickness / 2, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+}
+
 let drawing = false;
 let drawings: MarkerLine[] = [];
 let redoStack: MarkerLine[] = [];
 let currentDrawing: MarkerLine | null = null;
 let currentThickness = 2;
+let toolPreview: ToolPreview | null = null;
 
 canvas.addEventListener('mousedown', (event) => {
     drawing = true;
     currentDrawing = new MarkerLine(event.offsetX, event.offsetY, currentThickness);
     drawings.push(currentDrawing);
     redoStack = []; // Clear redo stack on new drawing
+    toolPreview = null; // Hide tool preview while drawing
     canvas.dispatchEvent(new Event('drawing-changed'));
 });
 
@@ -69,6 +94,13 @@ canvas.addEventListener('mousemove', (event) => {
     if (drawing && currentDrawing) {
         currentDrawing.drag(event.offsetX, event.offsetY);
         canvas.dispatchEvent(new Event('drawing-changed'));
+    } else {
+        if (!toolPreview) {
+            toolPreview = new ToolPreview(event.offsetX, event.offsetY, currentThickness);
+        } else {
+            toolPreview.updatePosition(event.offsetX, event.offsetY);
+        }
+        canvas.dispatchEvent(new Event('tool-moved'));
     }
 });
 
@@ -80,12 +112,23 @@ canvas.addEventListener('mouseup', () => {
 canvas.addEventListener('mouseout', () => {
     drawing = false;
     currentDrawing = null;
+    toolPreview = null; // Hide tool preview when mouse leaves canvas
 });
 
 canvas.addEventListener('drawing-changed', () => {
     context.clearRect(0, 0, canvas.width, canvas.height);
     for (const drawing of drawings) {
         drawing.display(context);
+    }
+});
+
+canvas.addEventListener('tool-moved', () => {
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    for (const drawing of drawings) {
+        drawing.display(context);
+    }
+    if (toolPreview && !drawing) {
+        toolPreview.draw(context);
     }
 });
 
