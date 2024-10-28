@@ -11,9 +11,8 @@ app.innerHTML = `
     <button id="redoButton">Redo</button>
     <button id="thinButton">Thin</button>
     <button id="thickButton">Thick</button>
-    <button id="sticker1Button">😀</button>
-    <button id="sticker2Button">🎉</button>
-    <button id="sticker3Button">🌟</button>
+    <div id="stickerButtons"></div>
+    <button id="customStickerButton">Custom Sticker</button>
 `;
 
 const canvas = document.createElement('canvas') as HTMLCanvasElement;
@@ -131,6 +130,50 @@ let currentThickness = 2;
 let toolPreview: ToolPreview | StickerPreview | null = null;
 let currentStickerEmoji: string | null = null;
 
+const stickerData = [
+    { id: 'sticker1', emoji: '😀' },
+    { id: 'sticker2', emoji: '🎉' },
+    { id: 'sticker3', emoji: '🌟' }
+];
+
+const stickerButtonsDiv = document.getElementById('stickerButtons')!;
+stickerData.forEach(sticker => {
+    const button = document.createElement('button');
+    button.id = `${sticker.id}Button`;
+    button.textContent = sticker.emoji;
+    button.addEventListener('click', () => {
+        currentStickerEmoji = sticker.emoji;
+        updateSelectedTool(button);
+        canvas.dispatchEvent(new Event('tool-moved'));
+    });
+    stickerButtonsDiv.appendChild(button);
+});
+
+const customStickerButton = document.getElementById('customStickerButton') as HTMLButtonElement;
+customStickerButton.addEventListener('click', () => {
+    const customSticker = prompt('Enter your custom sticker:', '😊');
+    if (customSticker) {
+        const customStickerId = `sticker${stickerData.length + 1}`;
+        stickerData.push({ id: customStickerId, emoji: customSticker });
+        const button = document.createElement('button');
+        button.id = `${customStickerId}Button`;
+        button.textContent = customSticker;
+        button.addEventListener('click', () => {
+            currentStickerEmoji = customSticker;
+            updateSelectedTool(button);
+            canvas.dispatchEvent(new Event('tool-moved'));
+        });
+        stickerButtonsDiv.appendChild(button);
+    }
+});
+
+function updateSelectedTool(selectedButton: HTMLButtonElement) {
+    document.querySelectorAll('button').forEach(button => {
+        button.classList.remove('selectedTool');
+    });
+    selectedButton.classList.add('selectedTool');
+}
+
 canvas.addEventListener('mousedown', (event) => {
     if (currentStickerEmoji) {
         currentSticker = new Sticker(event.offsetX, event.offsetY, currentStickerEmoji);
@@ -245,57 +288,16 @@ redoButton.addEventListener('click', () => {
 
 const thinButton = document.getElementById('thinButton') as HTMLButtonElement;
 const thickButton = document.getElementById('thickButton') as HTMLButtonElement;
-const sticker1Button = document.getElementById('sticker1Button') as HTMLButtonElement;
-const sticker2Button = document.getElementById('sticker2Button') as HTMLButtonElement;
-const sticker3Button = document.getElementById('sticker3Button') as HTMLButtonElement;
 
 thinButton.addEventListener('click', () => {
     currentThickness = 2;
     currentStickerEmoji = null;
-    thinButton.classList.add('selectedTool');
-    thickButton.classList.remove('selectedTool');
-    sticker1Button.classList.remove('selectedTool');
-    sticker2Button.classList.remove('selectedTool');
-    sticker3Button.classList.remove('selectedTool');
+    updateSelectedTool(thinButton);
 });
 
 thickButton.addEventListener('click', () => {
     currentThickness = 5;
     currentStickerEmoji = null;
-    thickButton.classList.add('selectedTool');
-    thinButton.classList.remove('selectedTool');
-    sticker1Button.classList.remove('selectedTool');
-    sticker2Button.classList.remove('selectedTool');
-    sticker3Button.classList.remove('selectedTool');
-});
-
-sticker1Button.addEventListener('click', () => {
-    currentStickerEmoji = '😀';
-    sticker1Button.classList.add('selectedTool');
-    sticker2Button.classList.remove('selectedTool');
-    sticker3Button.classList.remove('selectedTool');
-    thinButton.classList.remove('selectedTool');
-    thickButton.classList.remove('selectedTool');
-    canvas.dispatchEvent(new Event('tool-moved'));
-});
-
-sticker2Button.addEventListener('click', () => {
-    currentStickerEmoji = '🎉';
-    sticker2Button.classList.add('selectedTool');
-    sticker1Button.classList.remove('selectedTool');
-    sticker3Button.classList.remove('selectedTool');
-    thinButton.classList.remove('selectedTool');
-    thickButton.classList.remove('selectedTool');
-    canvas.dispatchEvent(new Event('tool-moved'));
-});
-
-sticker3Button.addEventListener('click', () => {
-    currentStickerEmoji = '🌟';
-    sticker3Button.classList.add('selectedTool');
-    sticker1Button.classList.remove('selectedTool');
-    sticker2Button.classList.remove('selectedTool');
-    thinButton.classList.remove('selectedTool');
-    thickButton.classList.remove('selectedTool');
-    canvas.dispatchEvent(new Event('tool-moved'));
+    updateSelectedTool(thickButton);
 });
 
