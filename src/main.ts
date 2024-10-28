@@ -13,8 +13,8 @@ app.innerHTML = `
         <button id="clearButton">Clear</button>
         <button id="undoButton">Undo</button>
         <button id="redoButton">Redo</button>
-        <button id="thinButton">Thin</button>
-        <button id="thickButton">Thick</button>
+        <input type="range" id="thicknessSlider" min="1" max="20" value="2">
+        <input type="color" id="colorPicker" value="#000000">
         <div id="stickerButtons"></div>
         <button id="customStickerButton">Custom Sticker</button>
         <button id="exportButton">Export</button>
@@ -29,10 +29,12 @@ context.strokeStyle = 'black';
 class MarkerLine {
     private points: { x: number, y: number }[] = [];
     private thickness: number;
+    private color: string;
 
-    constructor(x: number, y: number, thickness: number) {
+    constructor(x: number, y: number, thickness: number, color: string) {
         this.points.push({ x, y });
         this.thickness = thickness;
+        this.color = color;
     }
 
     drag(x: number, y: number) {
@@ -41,6 +43,7 @@ class MarkerLine {
 
     display(ctx: CanvasRenderingContext2D) {
         ctx.lineWidth = this.thickness;
+        ctx.strokeStyle = this.color;
         ctx.beginPath();
         for (let i = 0; i < this.points.length; i++) {
             const point = this.points[i];
@@ -128,6 +131,7 @@ let redoStack: (MarkerLine | Sticker)[] = [];
 let currentMarkerLine: MarkerLine | null = null;
 let currentSticker: Sticker | null = null;
 let currentThickness = 2;
+let currentColor = 'black';
 let toolPreview: ToolPreview | StickerPreview | null = null;
 let currentStickerEmoji: string | null = null;
 
@@ -168,26 +172,26 @@ customStickerButton.addEventListener('click', () => {
     }
 });
 
-function updateSelectedTool(selectedButton: HTMLButtonElement) {
-    document.querySelectorAll('button').forEach(button => {
-        button.classList.remove('selectedTool');
+function updateSelectedTool(selectedElement: HTMLElement) {
+    document.querySelectorAll('button, input[type="color"], input[type="range"]').forEach(element => {
+        element.classList.remove('selectedTool');
     });
-    selectedButton.classList.add('selectedTool');
+    selectedElement.classList.add('selectedTool');
 }
 
 canvas.addEventListener('mousedown', (event) => {
     if (currentStickerEmoji) {
         currentSticker = new Sticker(event.offsetX, event.offsetY, currentStickerEmoji);
         stickers.push(currentSticker);
-        redoStack = []; // Clear redo stack on new drawing
-        toolPreview = null; // Hide tool preview while drawing
+        redoStack = [];
+        toolPreview = null;
         canvas.dispatchEvent(new Event('drawing-changed'));
     } else {
         isDrawing = true;
-        currentMarkerLine = new MarkerLine(event.offsetX, event.offsetY, currentThickness);
+        currentMarkerLine = new MarkerLine(event.offsetX, event.offsetY, currentThickness, currentColor);
         markerLines.push(currentMarkerLine);
-        redoStack = []; // Clear redo stack on new drawing
-        toolPreview = null; // Hide tool preview while drawing
+        redoStack = [];
+        toolPreview = null;
         canvas.dispatchEvent(new Event('drawing-changed'));
     }
 });
@@ -227,7 +231,7 @@ canvas.addEventListener('mouseout', () => {
     isDrawing = false;
     currentMarkerLine = null;
     currentSticker = null;
-    toolPreview = null; // Hide tool preview when mouse leaves canvas
+    toolPreview = null;
 });
 
 canvas.addEventListener('drawing-changed', () => {
@@ -287,19 +291,17 @@ redoButton.addEventListener('click', () => {
     }
 });
 
-const thinButton = document.getElementById('thinButton') as HTMLButtonElement;
-const thickButton = document.getElementById('thickButton') as HTMLButtonElement;
+const thicknessSlider = document.getElementById('thicknessSlider') as HTMLInputElement;
+const colorPicker = document.getElementById('colorPicker') as HTMLInputElement;
 
-thinButton.addEventListener('click', () => {
-    currentThickness = 2;
-    currentStickerEmoji = null;
-    updateSelectedTool(thinButton);
+thicknessSlider.addEventListener('input', () => {
+    currentThickness = parseInt(thicknessSlider.value, 10);
+    updateSelectedTool(thicknessSlider);
 });
 
-thickButton.addEventListener('click', () => {
-    currentThickness = 5;
-    currentStickerEmoji = null;
-    updateSelectedTool(thickButton);
+colorPicker.addEventListener('input', () => {
+    currentColor = colorPicker.value;
+    updateSelectedTool(colorPicker);
 });
 
 const exportButton = document.getElementById('exportButton') as HTMLButtonElement;
@@ -308,7 +310,7 @@ exportButton.addEventListener('click', () => {
     exportCanvas.width = 1024;
     exportCanvas.height = 1024;
     const exportContext = exportCanvas.getContext('2d')!;
-    exportContext.scale(4, 4); // Scale context to match the size of the original canvas
+    exportContext.scale(4, 4);
 
     // Redraw all items on the export canvas
     for (const markerLine of markerLines) {
@@ -318,7 +320,6 @@ exportButton.addEventListener('click', () => {
         sticker.display(exportContext);
     }
 
-    // Trigger file download
     exportCanvas.toBlob((blob) => {
         if (blob) {
             const url = URL.createObjectURL(blob);
