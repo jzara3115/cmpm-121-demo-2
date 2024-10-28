@@ -6,22 +6,22 @@ const app = document.querySelector<HTMLDivElement>("#app")!;
 document.title = APP_NAME;
 app.innerHTML = `
     <h1>${APP_NAME}</h1>
-    <button id="clearButton">Clear</button>
-    <button id="undoButton">Undo</button>
-    <button id="redoButton">Redo</button>
-    <button id="thinButton">Thin</button>
-    <button id="thickButton">Thick</button>
-    <div id="stickerButtons"></div>
-    <button id="customStickerButton">Custom Sticker</button>
-    <button id="exportButton">Export</button>
+    <div id="canvasContainer">
+        <canvas id="myCanvas" width="256" height="256"></canvas>
+    </div>
+    <div id="buttonContainer">
+        <button id="clearButton">Clear</button>
+        <button id="undoButton">Undo</button>
+        <button id="redoButton">Redo</button>
+        <button id="thinButton">Thin</button>
+        <button id="thickButton">Thick</button>
+        <div id="stickerButtons"></div>
+        <button id="customStickerButton">Custom Sticker</button>
+        <button id="exportButton">Export</button>
+    </div>
 `;
 
-const canvas = document.createElement('canvas') as HTMLCanvasElement;
-canvas.id = 'myCanvas';
-canvas.width = 256;
-canvas.height = 256;
-app.appendChild(canvas);
-
+const canvas = document.getElementById('myCanvas') as HTMLCanvasElement;
 const context = canvas.getContext('2d')!;
 context.lineWidth = 2;
 context.strokeStyle = 'black';
