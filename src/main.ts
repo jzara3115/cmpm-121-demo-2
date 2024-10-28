@@ -13,6 +13,7 @@ app.innerHTML = `
     <button id="thickButton">Thick</button>
     <div id="stickerButtons"></div>
     <button id="customStickerButton">Custom Sticker</button>
+    <button id="exportButton">Export</button>
 `;
 
 const canvas = document.createElement('canvas') as HTMLCanvasElement;
@@ -299,5 +300,34 @@ thickButton.addEventListener('click', () => {
     currentThickness = 5;
     currentStickerEmoji = null;
     updateSelectedTool(thickButton);
+});
+
+const exportButton = document.getElementById('exportButton') as HTMLButtonElement;
+exportButton.addEventListener('click', () => {
+    const exportCanvas = document.createElement('canvas') as HTMLCanvasElement;
+    exportCanvas.width = 1024;
+    exportCanvas.height = 1024;
+    const exportContext = exportCanvas.getContext('2d')!;
+    exportContext.scale(4, 4); // Scale context to match the size of the original canvas
+
+    // Redraw all items on the export canvas
+    for (const markerLine of markerLines) {
+        markerLine.display(exportContext);
+    }
+    for (const sticker of stickers) {
+        sticker.display(exportContext);
+    }
+
+    // Trigger file download
+    exportCanvas.toBlob((blob) => {
+        if (blob) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'drawing.png';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    });
 });
 
