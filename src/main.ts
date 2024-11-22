@@ -13,6 +13,7 @@ app.innerHTML = `
         <button id="clearButton">Clear</button>
         <button id="undoButton">Undo</button>
         <button id="redoButton">Redo</button>
+        <button id="pen">PenTool</button>
         <input type="range" id="thicknessSlider" min="1" max="20" value="2">
         <input type="color" id="colorPicker" value="#000000">
         <div id="stickerButtons"></div>
@@ -175,6 +176,7 @@ customStickerButton.addEventListener('click', () => {
 function updateSelectedTool(selectedElement: HTMLElement) {
     document.querySelectorAll('button, input[type="color"], input[type="range"]').forEach(element => {
         element.classList.remove('selectedTool');
+        console.log(element);
     });
     selectedElement.classList.add('selectedTool');
 }
@@ -290,7 +292,10 @@ redoButton.addEventListener('click', () => {
         canvas.dispatchEvent(new Event('drawing-changed'));
     }
 });
-
+const penToolButton = document.getElementById('pen') as HTMLButtonElement;
+penToolButton.addEventListener('click', () => {
+    currentStickerEmoji = null;
+})
 const thicknessSlider = document.getElementById('thicknessSlider') as HTMLInputElement;
 const colorPicker = document.getElementById('colorPicker') as HTMLInputElement;
 
